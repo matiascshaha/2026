@@ -1,0 +1,113 @@
+About the job
+The Company
+PayPal has been revolutionizing commerce globally for more than 25 years. Creating innovative experiences that make moving money, selling, and shopping simple, personalized, and secure, PayPal empowers consumers and businesses in approximately 200 markets to join and thrive in the global economy.
+
+We operate a global, two-sided network at scale that connects hundreds of millions of merchants and consumers. We help merchants and consumers connect, transact, and complete payments, whether they are online or in person. PayPal is more than a connection to third-party payment networks. We provide proprietary payment solutions accepted by merchants that enable the completion of payments on our platform on behalf of our customers.
+
+We offer our customers the flexibility to use their accounts to purchase and receive payments for goods and services, as well as the ability to transfer and withdraw funds. We enable consumers to exchange funds more safely with merchants using a variety of funding sources, which may include a bank account, a PayPal or Venmo account balance, PayPal and Venmo branded credit products, a credit card, a debit card, certain cryptocurrencies, or other stored value products such as gift cards, and eligible credit card rewards. Our PayPal, Venmo, and Xoom products also make it safer and simpler for friends and family to transfer funds to each other. We offer merchants an end-to-end payments solution that provides authorization and settlement capabilities, as well as instant access to funds and payouts. We also help merchants connect with their customers, process exchanges and returns, and manage risk. We enable consumers to engage in cross-border shopping and merchants to extend their global reach while reducing the complexity and friction involved in enabling cross-border trade.
+
+Our beliefs are the foundation for how we conduct business every day. We live each day guided by our core values of Inclusion, Innovation, Collaboration, and Wellness. Together, our values ensure that we work together as one global team with our customers at the center of everything we do – and they push us to ensure we take care of ourselves, each other, and our communities.
+
+Job Description Summary:
+This job acts as a project leader, coordinating the activities of other engineers, determining technical tasks, and improving existing structures and processes. It involves making technical decisions, collaborating with management to set standards, and representing the company to external partners.
+
+Job Description:
+Essential Responsibilities: 
+
+Acts as a project or system leader, coordinating the activities of other engineers on the project or within the system
+Determines the technical tasks that other engineers will follow
+Actions result in the achievement of customer, operational, program or service objectives
+Proactively improves existing structures & processes
+Exercises judgement in reconciling diverse and competing priorities (time, quality, complexity risk) to identify optimal solutions to problems
+Notices patterns and condenses repetition into densely meaningful generalized solutions
+Collaborates with management to set/improve standards for engineering rigor
+Trusted to represent PayPal, Inc to the outside world via interactions with partners, customers, or industry organizations
+
+
+Minimum Qualifications:
+
+Minimum of 8 years of relevant work experience and a Bachelor's degree or equivalent experience.
+
+
+Additional Responsibilities And Preferred Qualifications
+Key Responsibilities
+
+Enable Developer Productivity:
+
+Build and enhance automation tools that accelerate development workflows, such as code linting, static analysis, and build optimization tools.
+
+Design and implement solutions to automate repetitive developer tasks, such as test data setup, environment provisioning, and dependency management.
+
+Design Advanced Testing Automation:
+
+Create robust frameworks and tooling for automated testing across unit, integration, functional, performance, and security testing for both web and mobile applications.
+
+Develop systems to enable early testing in the SDLC using technologies like Espresso, emulators, and device labs.
+
+Automate end-to-end testing processes to reduce manual effort and improve test reliability.
+
+Optimize Quality Assurance Practices:
+
+Automate quality checks throughout the pipeline, from code commit to production deployment.
+
+Leverage data and analytics to identify gaps in quality processes and implement automated solutions to address them.
+
+Drive innovation in functional and non-functional testing, such as screenshot testing, performance benchmarking, and security scans.
+
+Streamline Development Workflows:
+
+Build integrations with CI/CD pipelines to ensure seamless execution of automated tasks.
+
+Design and maintain tools that monitor system performance and reliability during development and post-deployment.
+
+Promote Scalability and Reliability:
+
+Collaborate on the development of scalable automation strategies that grow with the organization’s needs.
+
+Introduce robust monitoring and alerting systems to ensure automation reliability and performance.
+
+Leadership and Collaboration:
+
+Mentor and guide engineering teams on adopting and integrating productivity-enhancing automation solutions.
+
+Collaborate with product managers, QA teams, DevOps, and other stakeholders to align automation goals with business objectives.
+
+Qualifications
+Technical Expertise:
+
+8+ years of experience in software engineering, with a focus on automation and productivity tooling.
+
+Proficiency in event-driven architecture, test automation frameworks, and CI/CD pipeline integration.
+
+Experience building tools and frameworks for both functional and non-functional testing, such as load, security, and performance testing.
+
+Deep knowledge of Android/iOS testing tools (e.g., Espresso, XCUITest) and workflows, as well as general development ecosystems.
+
+Expertise in using virtualized and physical device labs for enhanced testing scenarios.
+
+Development Stack:
+
+Strong programming skills in languages such as Kotlin, Swift, Java, Python, or JavaScript.
+
+Hands-on experience with infrastructure automation tools like Terraform, Ansible, or similar.
+
+Familiarity with modern development workflows, version control systems (e.g., Git), and build tools (e.g., Gradle, Maven).
+
+Soft Skills:
+
+Proven ability to solve complex technical problems with creative, scalable solutions.
+
+Excellent communication skills for cross-functional collaboration.
+
+Demonstrated leadership and mentorship experience in engineering teams.
+
+Preferred Qualifications
+Experience with advanced developer tools like IDE plugins, static code analysis tools, or automated code review systems.
+
+Experience with containerization tools like Docker, Kubernetes.
+
+Familiarity with metrics-driven development and monitoring using tools like DataDog, Grafana, Prometheus, or New Relic.
+
+Knowledge of microservices and distributed systems architecture, particularly in automation contexts.
+
+The base pay for this role will depend on where you work and the relevant experience and expertise you bring. The expected range of pay for this role by location is:

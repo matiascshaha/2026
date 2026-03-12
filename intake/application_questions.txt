@@ -1,0 +1,4 @@
+Why do you want to work here?
+Why are you a fit for this role?
+Tell us about a recent bug you isolated and how you verified the fix.
+How do you balance manual exploratory testing and automation?

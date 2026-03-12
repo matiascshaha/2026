@@ -1,0 +1,45 @@
+@page {
+  size: Letter;
+  margin: 0.3in 0.35in;
+}
+
+html,
+body {
+  font-family: "Aptos", "Helvetica Neue", Arial, sans-serif;
+  font-size: 9pt;
+  line-height: 1.15;
+  color: #111111;
+  margin: 0;
+  padding: 0;
+}
+
+h1 {
+  font-size: 13.5pt;
+  margin: 0 0 4pt 0;
+}
+
+h2 {
+  font-size: 10.4pt;
+  margin: 5pt 0 2pt 0;
+}
+
+h3 {
+  font-size: 9.6pt;
+  margin: 4pt 0 2pt 0;
+}
+
+p,
+li {
+  margin: 0 0 2pt 0;
+}
+
+ul {
+  margin: 0 0 3pt 0;
+  padding-left: 11pt;
+}
+
+hr {
+  border: 0;
+  border-top: 0.6pt solid #d0d0d0;
+  margin: 4pt 0;
+}
