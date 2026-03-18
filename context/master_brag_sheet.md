@@ -198,6 +198,34 @@ Strong for showing applied AI/system design in an internal productivity context.
 
 ## Achievement
 
+Title: Built a natural-language Slack regression runner that maps prompts to tests and launches scaled CI runs
+
+Context: Professional Experience
+Organization: Dexcom
+Ownership: Led and built end-to-end.
+
+Problem:
+Running targeted regressions required manual search across the repo test base, manual test selection, and manual run setup, which slowed feedback and added inconsistency.
+
+Action:
+Built a Slack bot that accepts natural-language prompts, performs context-aware search across the test and regression codebase, maps the prompt to relevant test sets, triggers a GitHub Actions workflow_dispatch run, and returns the execution link directly in Slack. Designed the run path to scale parallel runners up or down based on how many tests were selected after filtering.
+
+Impact:
+Reduced friction from issue/question to executable regression, improved repeatability of targeted validation, and shortened the path to actionable test results for engineers.
+
+Technologies:
+Python, Slack API, GitHub Actions workflow_dispatch, test discovery and filtering, parallel sharding orchestration
+
+Tags:
+slack bot, regression automation, workflow dispatch, natural language interface, developer productivity, test orchestration
+
+Notes:
+Strong signal for practical AI-assisted developer tooling tied directly to quality execution workflows.
+
+---
+
+## Achievement
+
 Title: Built a richer test-results dashboard experience by shifting runtime visibility away from TestRail
 
 Context: Professional Experience
