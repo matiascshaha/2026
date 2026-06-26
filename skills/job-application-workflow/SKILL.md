@@ -23,7 +23,9 @@ Use this skill when working in this repository to produce role-specific applicat
    - `<company_slug>_resume.md`
    - `<company_slug>_cover_letter.md`
 7. Generate `<company_slug>_application_answers.md` only when requested or when application questions are clearly part of the task.
-8. Export PDFs when the user asks for them or when the request explicitly includes export.
+8. Generate and keep both PDF outputs in addition to the markdown files:
+   - `pdf/<company_slug>_resume.pdf`
+   - `pdf/<company_slug>_cover_letter.pdf`
 
 ## Company Workspace Rules
 
@@ -38,7 +40,8 @@ Expected job workspace outputs:
 - `jobs/<company_slug>/<company_slug>_resume.md`
 - `jobs/<company_slug>/<company_slug>_cover_letter.md`
 - `jobs/<company_slug>/<company_slug>_application_answers.md` (optional)
-- `jobs/<company_slug>/pdf/` for exported PDFs
+- `jobs/<company_slug>/pdf/<company_slug>_resume.pdf`
+- `jobs/<company_slug>/pdf/<company_slug>_cover_letter.pdf`
 
 ## Content Rules
 
@@ -64,14 +67,14 @@ Preferred path when the shell tooling works:
 
 - Run `./scripts/prepare_application.sh --company <company> --job-description ./intake/job_description.txt`
 - Optionally run `./scripts/generate_application_answers.sh --company <company_slug> --overwrite`
-- Run `./scripts/export_pdfs.sh --company <company_slug>` when PDF export is requested
+- Run `./scripts/export_pdfs.sh --company <company_slug>` after generating the markdown outputs so both PDFs are created
 
 Fallback path when the Bash-oriented scripts do not work, especially on Windows:
 
 - Create `jobs/<company_slug>/` manually
 - Copy `intake/job_description.txt` into `jobs/<company_slug>/job_description.txt`
 - Write the markdown outputs directly into that folder
-- If PDF export tooling is unavailable, use an available local PDF generation path rather than blocking on the repo scripts
+- Generate both PDFs with an available local PDF generation path rather than blocking on the repo scripts
 
 ## Answering "How Do I Use This Repo?"
 
@@ -83,8 +86,8 @@ When the user asks for step-by-step usage, give the short practical flow:
 4. Prepare `jobs/<company_slug>/`
 5. Generate the resume and cover letter from `AGENTS.md`
 6. Optionally generate application answers
-7. Export PDFs
+7. Export resume and cover letter PDFs while keeping the markdown files
 
 ## Completion Standard
 
-The task is not complete until the requested outputs exist in the correct company workspace with company-based filenames.
+The task is not complete until the markdown outputs and both PDFs exist in the correct company workspace with company-based filenames, unless the user explicitly waives PDF generation.
