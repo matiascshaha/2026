@@ -1,39 +1,32 @@
-Do you have a passion for development and automation as well as driven vision for delivering the best experiences to users? Do you want to work at a company where customers have real passion and excitement for the products you help build? At PlayStation, we are looking for engineers to join a global initiative in building innovative test automation and CI/CD systems. We are looking for self-motivated, quick-starter and highly proactive individuals to join our Client QA team, who would be responsible for ensuring delivery of features on PlayStation's Mobile App!
+About ClickHouse
+Recognized on the 2025 Forbes Cloud 100 list, ClickHouse is one of the most innovative and fast-growing private cloud companies. With more than 3,000 customers and ARR that has grown over 250 percent year over year, ClickHouse leads the market in real-time analytics, data warehousing, observability, and AI workloads.
 
-At PlayStation, we are passionate about innovation, teamwork and technology. We love building the systems that millions of people use and are our own first customers. We strive to be at the forefront of development technologies and are a diverse company with teams on four continents.
+The company’s sustained, accelerating momentum was recently validated by a $400M Series D financing round. Over the past three months, customers including Capital One, Lovable, Decagon, Polymarket, and Airwallex have adopted the platform or expanded existing deployments. These customers join an established base of AI innovators and global brands such as Meta, Cursor, Sony, and Tesla.
 
-Primary Responsibilities
+We’re on a mission to transform how companies use data. Come be a part of our journey!
 
-Review product requirements and design documents to understand how the feature works on the PlayStation console and create effective testing strategies.
-Plan and complete QA related activities for UI testing; build test plan, test cases, and implement to ensure the quality of new features.
-Develop and implement standard methodologies for automation, continuous build and deploy, automated testing and end-to-end testing. Maintenance of the PS5 devices used in testing.
-Passionate about Quality and strives to improve process, proposes best practices and drives their usage within the team.
-Manage various Jenkins Jobs and report statuses
-Work with Developers, Product Owners to ensure that all features and bug fixes come with automated test coverage
-Assist with production deployment support and post release
-Report, track and verify defects
+About the Team
 
-Qualifications
+The Core Engineering team is responsible for working on the beloved ClickHouse open-source project while working cross-functionally across engineering and product teams as we develop and expand our Cloud service offering. We are seeking a Senior Software Quality Engineer who will focus on improving the efficiency and quality of both our open-source and cloud offerings. You will build out automation of critical operational functions that ensure ClickHouse Cloud operates smoothly worldwide and at our massive scale. The ideal candidate for this position is someone with strong technical skills and a background in release engineering.
 
-Minimum BS degree in CS or a related field, or ability to demonstrate equivalent knowledge
-Experience in building and executing test plans and test cases
-Experience writing automated tests in Python, Java Script or any other Programming Language
-Understanding of automation test framework like pytest
-Experience in setting or configuring up test pipelines as part of Continuous Integration(CI), Jenkins preferred
-Practical experience using development and deployment tools like Git, Jenkins, Appium
-Experience with test case management systems & JIRA, QTest/QMetry systems
-Ability to estimate effort and size of features
-Experience with Agile methodologies
-Strong technical, analytical and problem-solving skills
-Able to work independently and as part of a team
-Excellent verbal and written communication skills. comfortable with cross functional collaboration
+What will you do?
 
-Please refer to our Candidate Privacy Notice for more information about how we process your personal information, and your data protection rights.
+Build and enhance test automation frameworks and develop automated test cases.
+Try out new features and ensure they land smoothly in Production.
+Test cross-functional implementations across internal teams at ClickHouse.
+Implement new testing strategies and automation for large and complex distributed systems.
+Evaluate the new functionality of ClickHouse for each release, and identify opportunities in the existing codebase for improvement.
+Engineer and improve existing testing infrastructure.
+About you:
 
-At SIE, we consider several factors when setting each role's base pay range, including the competitive benchmarking data for the market and geographic location.
-
-Please note that the base pay range may vary in line with our hybrid working policy and individual base pay will be determined based on job-related factors which may include knowledge, skills, experience, and location.
-
-In addition, this role is eligible for SIE's top-tier benefits package that includes medical, dental, vision, matching 401(k), paid time off, wellness program and coveted employee discounts for Sony products. This role also may be eligible for a bonus package. Click here to learn more.
-
-The estimated base pay range for this role is listed below.
+Extensive knowledge of SQL.
+Previously worked in a similar SDET, Release Engineering, or QA role related to a classical database or distributed system.
+Have hands-on experience with any programming language (Python, Go, C++).
+Can read C++ code for validation.
+Working knowledge of Git, Linux and shell scripting.
+Experience with both manual testing and automation testing.
+Demonstrated ability to work collaboratively, including with remote teams. Ability to learn complex technology quickly in a fast-paced, team-driven environment.
+You have excellent communication skills and the ability to work well within and across engineering teams.
+You are a strong problem-solver and have solid production debugging skills.
+You thrive in a fast-paced environment and see yourself as a partner with the business with the shared goal of moving the business forward.
+ 

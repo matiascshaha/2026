@@ -1,0 +1,4 @@
+interface:
+  display_name: "Job Application Workflow"
+  short_description: "Run this repo's resume application flow"
+  default_prompt: "Use $job-application-workflow to generate a tailored application package in this repo."
