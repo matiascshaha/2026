@@ -1,0 +1,22 @@
+name: Workflow tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.10', '3.12']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Check shell syntax
+        run: for script in scripts/*.sh pdf_gen/*.sh; do bash -n "$script" || exit; done
+      - name: Run synthetic tests (no secrets or model calls)
+        run: python3 -m unittest discover -s tests -v

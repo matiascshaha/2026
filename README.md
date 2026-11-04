@@ -1,5 +1,25 @@
 # Job Application Workflow
 
+## Retrieve context with an agent
+
+Python 3.10+ is enough; no packages, credentials, API, or database are required.
+
+```sh
+python3 scripts/agent.py index
+python3 scripts/agent.py search --query "authentication Python" --limit 3
+python3 scripts/agent.py read --id document_preferences
+python3 scripts/agent.py validate
+```
+
+The read-only interface exposes canonical context, source hashes, and stable
+achievement references as JSON. Start with the compact index and retrieve only
+relevant evidence. [Context interface](docs/agent-workflow.md) ·
+[Contribution guide](CONTRIBUTING.md).
+
+Keep new private notes/exports in `.private/` and generated packages in `jobs/`.
+This repository is public. The tooling does not submit applications or change a job
+radar; autopilot design is deferred. The manual application workflow follows.
+
 ## Daily Flow (2 commands + 1 prompt)
 1. Prepare workspace for a company:
 ```bash

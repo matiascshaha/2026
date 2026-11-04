@@ -122,6 +122,7 @@ if ! pdf_engine="$(detect_pdf_engine)"; then
   exit 1
 fi
 
+validate_job_workspace "$JOBS_DIR" "$company_slug"
 job_dir="$JOBS_DIR/$company_slug"
 pdf_dir="$job_dir/pdf"
 
@@ -137,16 +138,30 @@ files=(
   "$job_dir/${company_slug}_cover_letter.md"
 )
 
+# Validate the pair before invoking the converter. Heading-only preparation
+# stubs and obvious TODO/TBD placeholders are not finished documents.
+for md_file in "${files[@]}"; do
+  if [ ! -s "$md_file" ] || ! awk '
+      /^[[:space:]]*#/ { next }
+      /^[[:space:]]*$/ { next }
+      { line = tolower($0)
+        if (line ~ /^[[:space:]]*(todo|tbd|placeholder)([[:space:]:.!-]|$)/) next
+        content = 1 }
+      END { exit !content }' "$md_file"; then
+    echo "Missing or placeholder document: $md_file" >&2
+    exit 1
+  fi
+done
+
+# Stage both PDFs on the destination filesystem; publish only after both pass.
+staging_dir="$(mktemp -d "$pdf_dir/.export.XXXXXX")"
+trap 'rm -rf "$staging_dir"' EXIT
 converted_count=0
 page_violations=0
 page_check_failed=0
 for md_file in "${files[@]}"; do
-  if [ ! -f "$md_file" ]; then
-    continue
-  fi
-
   base_name="$(basename "$md_file" .md)"
-  pdf_file="$pdf_dir/${base_name}.pdf"
+  pdf_file="$staging_dir/${base_name}.pdf"
   doc_title="$(derive_doc_title "$md_file")"
 
   echo "Converting $(basename "$md_file") -> $(basename "$pdf_file")"
@@ -164,6 +179,11 @@ for md_file in "${files[@]}"; do
 
   pandoc \
     "${pandoc_args[@]}"
+
+  if [ ! -s "$pdf_file" ] || [ "$(head -c 5 "$pdf_file")" != "%PDF-" ]; then
+    echo "Converter did not create a nonempty PDF: $pdf_file" >&2
+    exit 1
+  fi
 
   if [ "$enforce_page_check" -eq 1 ]; then
     max_pages="$max_cover_letter_pages"
@@ -195,15 +215,20 @@ if [ "$converted_count" -eq 0 ]; then
 fi
 
 if [ "$enforce_page_check" -eq 1 ] && [ "$page_violations" -gt 0 ]; then
-  echo "Export completed, but $page_violations file(s) exceeded page limits."
+  echo "Export rejected: $page_violations file(s) exceeded page limits; existing PDFs preserved."
   echo "Either tighten the markdown content or run with larger limits."
   exit 2
 fi
 
 if [ "$enforce_page_check" -eq 1 ] && [ "$page_check_failed" -eq 1 ]; then
-  echo "Export completed, but page checking failed."
+  echo "Export rejected: page checking failed; existing PDFs preserved."
   echo "Run ./scripts/setup_pdf_tools.sh to install page-check dependencies, or rerun with --no-page-check."
   exit 3
 fi
+
+for md_file in "${files[@]}"; do
+  base_name="$(basename "$md_file" .md)"
+  mv -f "$staging_dir/${base_name}.pdf" "$pdf_dir/${base_name}.pdf"
+done
 
 echo "Done. PDFs created in $pdf_dir using $pdf_engine"
