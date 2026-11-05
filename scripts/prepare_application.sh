@@ -5,6 +5,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONTEXT_DIR="$PROJECT_ROOT/context"
 INTAKE_DIR="$PROJECT_ROOT/intake"
 JOBS_DIR="$PROJECT_ROOT/jobs"
+source "$PROJECT_ROOT/pdf_gen/common.sh"
 
 usage() {
   cat <<'EOF'
@@ -42,8 +43,10 @@ sanitize_job_description() {
     }
   ' "$src" > "$dst"
 
-  # Trim trailing empty lines.
-  sed -i '' -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$dst"
+  # Portable GNU/BSD trimming without in-place sed syntax.
+  awk 'NF { for (i = 0; i < blanks; i++) print ""; blanks = 0; print; next }
+       { blanks++ }' "$dst" > "$dst.trimmed"
+  mv "$dst.trimmed" "$dst"
 }
 
 snapshot_existing_outputs_if_needed() {
@@ -70,7 +73,8 @@ snapshot_existing_outputs_if_needed() {
   local timestamp
   local snapshot_dir
   timestamp="$(date +%Y%m%d_%H%M%S)"
-  snapshot_dir="$job_dir/history/$timestamp"
+  mkdir -p "$job_dir/history"
+  snapshot_dir="$(mktemp -d "$job_dir/history/${timestamp}.XXXXXX")"
 
   mkdir -p "$snapshot_dir/pdf"
 
@@ -200,11 +204,13 @@ if [ ! -f "$job_description_path" ]; then
 fi
 
 company_slug="$(slugify "$company_input")"
+validate_job_workspace "$JOBS_DIR" "$company_slug"
 job_dir="$JOBS_DIR/$company_slug"
 resume_file="$job_dir/${company_slug}_resume.md"
 cover_letter_file="$job_dir/${company_slug}_cover_letter.md"
 current_job_description="$job_dir/job_description.txt"
 sanitized_job_description="$(mktemp)"
+trap 'rm -f "$sanitized_job_description" "$sanitized_job_description.trimmed"' EXIT
 
 mkdir -p "$job_dir/pdf"
 
@@ -226,7 +232,7 @@ mv "$sanitized_job_description" "$job_dir/job_description.txt"
 chmod 644 "$job_dir/job_description.txt"
 
 questions_file="$job_dir/application_questions.txt"
-if [ -f "$INTAKE_DIR/application_questions.txt" ]; then
+if [ -f "$INTAKE_DIR/application_questions.txt" ] && [ ! -e "$questions_file" ]; then
   cp "$INTAKE_DIR/application_questions.txt" "$questions_file"
 fi
 

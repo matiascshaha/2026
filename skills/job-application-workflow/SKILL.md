@@ -7,6 +7,16 @@ description: Generate tailored resume, cover letter, and optional application an
 
 Use this skill when working in this repository to produce role-specific application materials.
 
+## Retrieve canonical context
+
+Before generating, use `python3 scripts/agent.py index` and `search --query "topic"`
+from the repo root to find source-linked evidence. Retrieve full relevant records
+with `read --id <id>`, and read the tone/quality documents in full. The helper is
+read-only and uses no model/API. See `docs/agent-workflow.md` for output contracts.
+Keep new private context exports under ignored `.private/`; the repo is public.
+Follow `CONTRIBUTING.md` for tooling or owner-confirmed context changes, tests, and
+any authorized draft PR. Neither retrieval nor generation permits submission.
+
 ## Core Workflow
 
 1. Read `AGENTS.md` first.

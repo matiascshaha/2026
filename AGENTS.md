@@ -1,5 +1,24 @@
 # AGENTS.md
 
+## Retrieve context and contribute
+
+Before working, run `python3 scripts/agent.py index` from the repo root. Use
+`search --query "topic"` for relevant evidence and `read --id <id>` for a complete
+source or achievement. Read `docs/agent-workflow.md` for the JSON contract and
+`CONTRIBUTING.md` before editing or publishing. Use returned source line references
+and hashes rather than invented Markdown anchors.
+
+Canonical personal Markdown remains the source of truth. Keep tooling changes
+separate from personal-context edits. The repository is public: keep new private
+notes and exports in ignored `.private/`, and application packages in ignored
+`jobs/`. Only add facts the owner has confirmed; never infer achievements or metrics.
+The helper is read-only and grants no authority to share data or submit applications.
+Job radar and autopilot work are out of scope for this context-retrieval workflow.
+
+For contributions, use a focused branch, run context validation and synthetic tests,
+review the diff for personal data, and open a draft PR only when publication is
+authorized. Do not merge/deploy or change access as a side effect.
+
 ## Purpose
 Generate exactly two tailored files from:
 - `master_brag_sheet.md`
@@ -88,13 +107,12 @@ Optional workflow when requested:
 - Cover letter: 3 short paragraphs plus sign-off.
 
 ## Brag references
-- `@master_brag_sheet.md#built-a-regression-orchestration-and-historical-dashboard-platform-for-large-scale-automated-test-runs`
-- `@master_brag_sheet.md#built-a-pr-driven-testrail-sync-tool-for-regulated-release-documentation`
-- `@master_brag_sheet.md#centralized-cross-repo-ui-flow-logic-for-scalable-end-to-end-test-maintenance`
-- `@master_brag_sheet.md#drove-architectural-cleanup-and-maintainability-standards-across-the-automation-codebase`
-- `@master_brag_sheet.md#built-developer-tooling-to-simplify-execution-onboarding-and-local-parallel-test-workflows`
-- `@master_brag_sheet.md#migrated-parallel-test-execution-architecture-to-gke-with-kubernetes-based-orchestration`
-- `@master_brag_sheet.md#built-a-slack-to-jira-agent-to-convert-team-discussion-context-into-structured-work-items`
-- `@master_brag_sheet.md#built-a-richer-test-results-dashboard-experience-by-shifting-runtime-visibility-away-from-testrail`
-- `@master_brag_sheet.md#built-an-ai-agent-ready-repo-knowledge-system-for-coding-standards-refactors-and-test-planning-workflows`
-- `@master_brag_sheet.md#built-an-ai-assisted-discord-trade-alert-system-to-react-faster-to-analyst-research-and-convert-unstructured-messages-into-validated-trading-signals-and-optional-broker-executable-orders`
+
+Discover current achievement IDs and exact source lines with:
+
+- `python3 scripts/agent.py index`
+- `python3 scripts/agent.py search --query "relevant topic" --kind achievement`
+- `python3 scripts/agent.py read --id <achievement_id>`
+
+IDs are stable across body edits but change when the title changes. Re-read evidence
+when its source hash changes. Retrieval is not verification of factual truth.

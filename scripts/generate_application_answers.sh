@@ -5,6 +5,7 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CONTEXT_DIR="$PROJECT_ROOT/context"
 INTAKE_DIR="$PROJECT_ROOT/intake"
 JOBS_DIR="$PROJECT_ROOT/jobs"
+source "$PROJECT_ROOT/pdf_gen/common.sh"
 
 usage() {
   cat <<'EOF'
@@ -49,6 +50,7 @@ if [ -z "$company_slug" ]; then
   exit 1
 fi
 
+validate_job_workspace "$JOBS_DIR" "$company_slug"
 job_dir="$JOBS_DIR/$company_slug"
 out_file="$job_dir/${company_slug}_application_answers.md"
 links_file="$CONTEXT_DIR/profile_links.md"

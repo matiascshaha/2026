@@ -1,2 +1,7 @@
 jobs/
 .DS_Store
+# Private local inputs, exports, and caches. Never commit application context dumps.
+.private/
+__pycache__/
+*.pyc
+.pytest_cache/
