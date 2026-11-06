@@ -1,10 +1,15 @@
 # Technical design
 
+The diagram and proposal below are the original design baseline. The first
+[offline audit implementation](assisted-audit.md) now covers lead records, frozen
+packets and observed outcomes, using transactional SQLite artifact BLOBs rather
+than sidecar files. Submission and authorization execution remain unimplemented.
+
 ## Components and relationship
 
 Solid arrows below show repository capabilities available today. Dotted arrows
 show the proposed integration. The radar already exists externally; the new
-coordinator and audit store do not.
+coordinator does not; the offline audit store is now partially implemented.
 
 ```mermaid
 flowchart TD
