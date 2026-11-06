@@ -28,3 +28,14 @@ Use synthetic jobs and career fixtures for automated tests. Add focused tests
 alongside each implemented requirement and a controlled end-to-end verification
 before enabling unattended submission. Do not use live applications as test data
 or submit an application merely to test a flow.
+
+## Implemented offline checks
+
+`tests/test_application_audit.py` now covers the offline portions: lead imports
+are not submissions, confirmed provider identities deduplicate under concurrency,
+URL-only matches stay uncertain, packet bytes and source mappings are frozen,
+missing facts stay as declared blockers, receipts and uncertain outcomes are
+distinct, corruption/deleted artifacts are detected, writes roll back on failure,
+and records persist across reopen. Tests use synthetic files and a temporary CLI
+checkout. See [implementation limits](assisted-audit.md). The remaining criteria
+above still require a coordinator and controlled assisted end-to-end verification.

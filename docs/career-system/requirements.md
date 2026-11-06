@@ -10,17 +10,17 @@ not a component verified or changed by this documentation contribution.
 
 | ID | Requirement | Goal | Status |
 | --- | --- | --- | --- |
-| FR01 | Import selected current or historical radar leads with source URL, employer, role, available job ID, and observation time. Distinguish recommendation history from application history. | G1 | Proposed connection |
+| FR01 | Import selected current or historical radar leads with source URL, employer, role, available job ID, and observation time. Distinguish recommendation history from application history. | G1 | Partial: offline lead import; radar adapter deferred |
 | FR02 | Recheck the employer's posting before applying. Record open, closed, or unverified status and when it was checked; do not treat an inaccessible page as a confirmed closure. | G1, G6 | Proposed |
-| FR03 | Check role-level submission history and available receipts before any submission. Preserve uncertainty when evidence is missing; one employer can have several different roles. | G5, G6 | Proposed |
+| FR03 | Check role-level submission history and available receipts before any submission. Preserve uncertainty when evidence is missing; one employer can have several different roles. | G5, G6 | Partial: offline identity/history records; no submission executor |
 | FR04 | Retrieve relevant canonical career context through a read-only interface, returning source identity, line references, and content hashes. Retrieve full evidence before relying on a search excerpt. | G2 | Existing |
 | FR05 | Generate a tailored resume and cover letter, plus application answers when requested, using the career evidence and wording guidance. Unknown facts must be flagged, not invented. | G3 | Partial: helpers and drafting workflow |
-| FR06 | Retain the exact input job description, questions, source versions, final answers, and final files used for each application. A later regeneration must not silently replace the submitted version. | G3, G5 | Partial: local snapshots only |
-| FR07 | Record a claim-to-evidence map and a short, user-readable explanation of major tailoring choices and edits. | G5 | Proposed |
+| FR06 | Retain the exact input job description, questions, source versions, final answers, and final files used for each application. A later regeneration must not silently replace the submitted version. | G3, G5 | Partial: transactional offline packet snapshots and hashes |
+| FR07 | Record a claim-to-evidence map and a short, user-readable explanation of major tailoring choices and edits. | G5 | Partial: offline claim map, notes and event inspection |
 | FR08 | Support owner-confirmed career-context changes and profile drafts, preserving the distinction between personal projects and employer work. Publishing a profile change is a separate authorized action. | G2, G4 | Partial: manual contribution workflow |
-| FR09 | Provide a per-application view of materials, outstanding questions, authorization, attempts, outcome evidence, and a timestamped history. | G5 | Proposed |
+| FR09 | Provide a per-application view of materials, outstanding questions, authorization, attempts, outcome evidence, and a timestamped history. | G5 | Partial: offline claim map, notes and event inspection |
 | FR10 | Submit or upload only within the owner's authorized scope, destination, and data. Store that scope privately; a documentation, discovery, or drafting request does not enable submission. | G6 | Proposed execution gate |
-| FR11 | Pause when a required fact is unknown, authority is insufficient, a destination materially changes, or the site requires user action. Resume without losing already completed work. | G3, G6 | Proposed |
+| FR11 | Pause when a required fact is unknown, authority is insufficient, a destination materially changes, or the site requires user action. Resume without losing already completed work. | G3, G6 | Partial: declared packet blockers; no action executor |
 | FR12 | Record an attempt before submission and its confirmed or uncertain result afterward. Never blindly retry an uncertain submission. Reconcile receipt or site evidence first. | G5, G6 | Proposed |
 | FR13 | Offer read-only discovery, assisted preparation, and explicitly scoped submission as separate capabilities. The owner must be able to pause future submissions without losing records. | G1, G6 | Proposed coordinator modes |
 
@@ -42,6 +42,10 @@ not a component verified or changed by this documentation contribution.
 - **NFR05 Usability (G3, G5).** Show plain-language status, blockers, links, and
   materials. Audit summaries should explain evidence and choices without requiring
   the owner to read machine logs.
+
+See [assisted audit implementation](assisted-audit.md) for exact coverage, tests,
+and limitations. These partial statuses do not mean an end-to-end application
+coordinator is implemented.
 
 ## Before unattended submission
 
