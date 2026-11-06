@@ -14,11 +14,13 @@ python3 scripts/agent.py validate
 The read-only interface exposes canonical context, source hashes, and stable
 achievement references as JSON. Start with the compact index and retrieve only
 relevant evidence. [Context interface](docs/agent-workflow.md) ·
-[Contribution guide](CONTRIBUTING.md).
+[Contribution guide](CONTRIBUTING.md) ·
+[Career system goals, requirements, and design](docs/career-system/README.md).
 
 Keep new private notes/exports in `.private/` and generated packages in `jobs/`.
 This repository is public. The tooling does not submit applications or change a job
-radar; autopilot design is deferred. The manual application workflow follows.
+radar. The career-system documents describe a proposed integration and audit trail;
+autopilot implementation is not enabled. The manual application workflow follows.
 
 ## Daily Flow (2 commands + 1 prompt)
 1. Prepare workspace for a company:
