@@ -24,6 +24,10 @@ external outcomes. Submission remains absent and disabled. The original design
 documents below are the baseline; the implementation guide lists the exact partial
 coverage and deferred work.
 
+The [attempt reservation and recovery interface](attempt-reservations.md) adds
+durable local coordination for future agent orchestration. It still grants no
+submission authority and performs no external action.
+
 ## Current and proposed
 
 | Capability | Current position |
@@ -33,7 +37,7 @@ coverage and deferred work.
 | Application preparation | Existing workspace, Q&A-template, and PDF-export helpers, used with agent/manual drafting. |
 | Brag-sheet and profile maintenance | Owner-confirmed context edits and agent/manual drafting; no automatic external profile publishing. |
 | Radar-to-application connection | Proposed. |
-| Persistent application audit and duplicate prevention | Partial: offline audit CLI, frozen bytes, provider-identity import matching; no submission adapter or attempt lock. |
+| Persistent application audit and duplicate prevention | Partial: offline audit CLI, frozen bytes, provider-identity import matching; attempt locks and recovery; no submission adapter. |
 | Unattended application submission | Proposed, not enabled by these documents. |
 
 ## Where information belongs

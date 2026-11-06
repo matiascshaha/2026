@@ -24,13 +24,18 @@ The existing read-only context CLI and company workspace helpers are unchanged.
   outcomes cannot be overwritten. All old events remain visible.
 
 This partially implements FR01, FR03, FR06, FR07, FR09 and FR11. It is not a
-production implementation of FR10/FR12/FR13: no permissions registry, attempt
-reservation, submission coordinator, kill switch, retry executor, or website
+production implementation of FR10/FR12/FR13: no permissions registry,
+submission coordinator, kill switch, retry executor, or website
 verification exists. In particular, there is **no safe-to-submit signal**.
 `prepared` means only that a packet was saved without declared blockers.
 Structural checks do not verify that claims are true, all claims are mapped,
 answers are complete, PDFs render correctly, availability is current, an operator's
 receipt proves the stated outcome, or submission authority exists.
+
+The subsequent [attempt reservation interface](attempt-reservations.md) now adds
+local attempt locks and evidence-based recovery. It does not enable submission
+or remove the limitations above. Use it instead of legacy `observe` whenever an
+attempt has been reserved.
 
 ## Private storage and integrity
 
