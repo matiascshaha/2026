@@ -17,7 +17,9 @@ SPEC.loader.exec_module(audit)
 class AuditTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.root = Path(self.temp.name)
+        # macOS /var is a system symlink; establish the canonical temporary root
+        # before testing intentional symlinks inside our private storage fixture.
+        self.root = Path(self.temp.name).resolve()
         self.store = audit.AuditStore(self.root / 'private')
         self.lead = {'lead_id': 'example-1', 'employer': 'Example Labs', 'role_title': 'Engineer', 'source_url': 'https://example.invalid/jobs/42?job=42#details', 'provider': 'example-tenant', 'provider_job_id': '42', 'discovered_at': '2026-01-01T12:00:00Z'}
         self.app = self.store.import_lead(self.lead)['application_id']
