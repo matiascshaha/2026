@@ -86,7 +86,9 @@ context into public CI logs or commit real data as test fixtures.
 
 The CLI itself is read-only: it does not write files, update sources, submit
 applications, contact employers, or change a job radar. Shell redirection above is
-an explicit local export. Job radar and autopilot design are deferred.
+an explicit local export. The broader proposed workflow is documented in
+[Career system design](career-system/README.md); it does not change this CLI or
+enable job-radar integration or autopilot.
 
 ## Agent contribution workflow
 
