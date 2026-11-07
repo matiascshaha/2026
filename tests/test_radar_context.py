@@ -246,7 +246,7 @@ class RadarTests(unittest.TestCase):
         self.store.close()
         self.store = radar.WorkflowStore(self.private)
         self.assertEqual(self.store.inspect(before)['application']['status'], 'drafting')
-        self.assertEqual(self.store.db.execute('PRAGMA user_version').fetchone()[0], 3)
+        self.assertEqual(self.store.db.execute('PRAGMA user_version').fetchone()[0], 4)
 
     def test_actual_cli_end_to_end_and_error_envelope(self):
         scripts = Path(radar.__file__).parent
