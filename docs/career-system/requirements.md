@@ -21,7 +21,7 @@ not a component verified or changed by this documentation contribution.
 | FR09 | Provide a per-application view of materials, outstanding questions, authorization, attempts, outcome evidence, and a timestamped history. | G5 | Partial: offline claim map, notes and event inspection |
 | FR10 | Submit or upload only within the owner's authorized scope, destination, and data. Store that scope privately; a documentation, discovery, or drafting request does not enable submission. | G6 | Proposed execution gate |
 | FR11 | Pause when a required fact is unknown, authority is insufficient, a destination materially changes, or the site requires user action. Resume without losing already completed work. | G3, G6 | Partial: declared packet blockers; no action executor |
-| FR12 | Record an attempt before submission and its confirmed or uncertain result afterward. Never blindly retry an uncertain submission. Reconcile receipt or site evidence first. | G5, G6 | Proposed |
+| FR12 | Record an attempt before submission and its confirmed or uncertain result afterward. Never blindly retry an uncertain submission. Reconcile receipt or site evidence first. | G5, G6 | Partial: offline attempt reservations and reconciliation; execution deferred |
 | FR13 | Offer read-only discovery, assisted preparation, and explicitly scoped submission as separate capabilities. The owner must be able to pause future submissions without losing records. | G1, G6 | Proposed coordinator modes |
 
 ## Quality requirements

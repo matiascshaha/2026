@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAX_FILE_BYTES = 20 * 1024 * 1024
 REQUIRED = {'job_description', 'resume_md', 'cover_letter_md', 'resume_pdf', 'cover_letter_pdf'}
 OPTIONAL = {'questions', 'answers'}
-TERMINAL = {'submitted', 'already_applied', 'submission_unknown'}
+TERMINAL = {'submitted', 'already_applied', 'submission_unknown', 'attempt_reserved'}
 
 
 class AuditError(ValueError):
@@ -89,9 +89,10 @@ class AuditStore:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA foreign_keys = ON')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version not in (0, 1):
+        if version not in (0, 1, 2):
             raise AuditError('Unsupported audit database version')
         self.db.executescript('''
+            BEGIN IMMEDIATE;
             CREATE TABLE IF NOT EXISTS applications (
                 id TEXT PRIMARY KEY, identity TEXT UNIQUE, lead TEXT NOT NULL,
                 status TEXT NOT NULL, created_at TEXT NOT NULL
@@ -113,7 +114,18 @@ class AuditStore:
                 occurred_at TEXT NOT NULL, kind TEXT NOT NULL, details TEXT NOT NULL,
                 evidence BLOB, evidence_sha256 TEXT
             );
-            PRAGMA user_version = 1;
+            CREATE TABLE IF NOT EXISTS attempts (
+                id TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE,
+                application_id TEXT NOT NULL, revision INTEGER NOT NULL,
+                identity TEXT NOT NULL, destination TEXT NOT NULL,
+                state TEXT NOT NULL CHECK(state IN ('reserved', 'submission_unknown', 'submitted', 'failed')),
+                created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+                FOREIGN KEY(application_id, revision) REFERENCES packets(application_id, revision)
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS one_unresolved_or_submitted_attempt
+                ON attempts(identity) WHERE state IN ('reserved', 'submission_unknown', 'submitted');
+            PRAGMA user_version = 2;
+            COMMIT;
         ''')
 
     def close(self):
@@ -232,6 +244,8 @@ class AuditStore:
         with self.db:
             self.db.execute('BEGIN IMMEDIATE')
             app = self._application(app_id)
+            if self.db.execute("SELECT 1 FROM attempts WHERE application_id = ? AND state IN ('reserved', 'submission_unknown')", (app_id,)).fetchone():
+                raise AuditError('Resolve the reserved attempt instead of using legacy outcome observation')
             if revision is not None and not self.db.execute('SELECT 1 FROM packets WHERE application_id = ? AND revision = ?', (app_id, revision)).fetchone():
                 raise AuditError('Unknown packet revision')
             if app['status'] in {'submitted', 'already_applied'}:
@@ -242,6 +256,73 @@ class AuditStore:
                         'provenance': 'operator-reported; not independently verified', 'authorization': 'not captured by this offline tool'}, evidence)
             self.db.execute('UPDATE applications SET status = ? WHERE id = ?', (outcome, app_id))
         return {'application_id': app_id, 'status': outcome}
+
+    @staticmethod
+    def _attempt_result(row, existing=False):
+        return {'attempt': dict(row), 'existing': existing,
+                'submission_enabled': False, 'execution_authorized': False,
+                'warning': 'Reservation is bookkeeping only, not permission to upload or submit. Never retry an unresolved attempt.'}
+
+    def reserve_attempt(self, app_id, revision, destination, request_id):
+        """Reserve local coordination only; no authorization or external action."""
+        destination = canonical_url(destination)
+        request_id = require_text(request_id, 'request_id')
+        if type(revision) is not int or revision < 1:
+            raise AuditError('revision must be a positive integer')
+        with self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            prior = self.db.execute('SELECT * FROM attempts WHERE request_id = ?', (request_id,)).fetchone()
+            if prior:
+                if (prior['application_id'], prior['revision'], prior['destination']) != (app_id, revision, destination):
+                    raise AuditError('request_id is already bound to a different application, packet, or destination')
+                return self._attempt_result(prior, existing=True)
+            app = self._application(app_id)
+            if app['identity'] is None:
+                raise AuditError('Attempt reservation requires confirmed provider job identity; URL-only matches need review')
+            if app['status'] not in {'prepared', 'failed'}:
+                raise AuditError('Application has unresolved history or is not prepared')
+            view = self.inspect(app_id)
+            if not view['integrity_ok'] or not view['packets']:
+                raise AuditError('Packet or evidence integrity check failed')
+            packet = view['packets'][-1]
+            if packet['revision'] != revision or packet['blockers']:
+                raise AuditError('Reserve only the latest packet revision without declared blockers')
+            if self.db.execute("SELECT 1 FROM attempts WHERE identity = ? AND state IN ('reserved', 'submission_unknown', 'submitted')", (app['identity'],)).fetchone():
+                raise AuditError('An unresolved or confirmed attempt already holds this job identity')
+            attempt_id, created = str(uuid.uuid4()), now()
+            self.db.execute('INSERT INTO attempts VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                            (attempt_id, request_id, app_id, revision, app['identity'], destination, 'reserved', created, created))
+            self.db.execute("UPDATE applications SET status = 'attempt_reserved' WHERE id = ?", (app_id,))
+            self._event(app_id, 'attempt_reserved', {'attempt_id': attempt_id, 'request_id': request_id,
+                        'revision': revision, 'destination': destination, 'execution_authorized': False})
+            row = self.db.execute('SELECT * FROM attempts WHERE id = ?', (attempt_id,)).fetchone()
+        return self._attempt_result(row)
+
+    def resolve_attempt(self, attempt_id, outcome, note, evidence=None):
+        """Reconcile operator-reported results; never execute or automatically retry."""
+        if outcome not in {'submission_unknown', 'submitted', 'failed'}:
+            raise AuditError('Attempt outcome must be submitted, failed, or submission_unknown')
+        note = require_text(note, 'note')
+        if evidence is not None and (not isinstance(evidence, bytes) or not evidence or len(evidence) > MAX_FILE_BYTES):
+            raise AuditError('Evidence must be nonempty bytes no larger than 20 MiB')
+        if outcome in {'submitted', 'failed'} and evidence is None:
+            raise AuditError('Terminal attempt outcomes require confirmation or no-submission reconciliation evidence')
+        with self.db:
+            self.db.execute('BEGIN IMMEDIATE')
+            row = self.db.execute('SELECT * FROM attempts WHERE id = ?', (attempt_id,)).fetchone()
+            if row is None:
+                raise AuditError('Unknown attempt ID')
+            if row['state'] in {'submitted', 'failed'}:
+                raise AuditError('Attempt is already resolved; inspect its saved result before doing anything else')
+            if not self.inspect(row['application_id'])['integrity_ok']:
+                raise AuditError('Audit integrity check failed; preserve records and reconcile manually')
+            self.db.execute('UPDATE attempts SET state = ?, updated_at = ? WHERE id = ?', (outcome, now(), attempt_id))
+            self.db.execute('UPDATE applications SET status = ? WHERE id = ?', (outcome, row['application_id']))
+            self._event(row['application_id'], 'attempt_reconciled', {'attempt_id': attempt_id,
+                        'revision': row['revision'], 'destination': row['destination'], 'outcome': outcome,
+                        'note': note, 'provenance': 'operator-reported; not independently verified'}, evidence)
+            result = self.db.execute('SELECT * FROM attempts WHERE id = ?', (attempt_id,)).fetchone()
+        return self._attempt_result(result)
 
     def inspect(self, app_id):
         app = dict(self._application(app_id))
@@ -267,7 +348,9 @@ class AuditStore:
             valid = digest(row['evidence']) == row['evidence_sha256'] if row['evidence'] is not None else row['evidence_sha256'] is None
             integrity = integrity and valid
             events.append({'id': row['id'], 'occurred_at': row['occurred_at'], 'kind': row['kind'], 'details': json.loads(row['details']), 'evidence_sha256': row['evidence_sha256'], 'integrity_ok': valid})
-        return {'application': app, 'packets': packets, 'events': events, 'integrity_ok': integrity,
+        return {'application': app, 'packets': packets, 'events': events,
+                'attempts': [dict(row) for row in self.db.execute('SELECT id, request_id, revision, destination, state, created_at, updated_at FROM attempts WHERE application_id = ? ORDER BY created_at', (app_id,))],
+                'integrity_ok': integrity,
                 'submission_enabled': False, 'warning': 'Prepared is not submitted or authorized. External outcomes are operator-reported. No receipt does not prove no application.'}
 
     def artifact(self, app_id, revision, name):
@@ -295,6 +378,7 @@ def main():
     show = commands.add_parser('inspect')
     show.add_argument('application_id')
     commands.add_parser('list')
+    commands.add_parser('pending-attempts')
     observe = commands.add_parser('observe')
     observe.add_argument('application_id')
     observe.add_argument('--outcome', required=True, choices=['submitted', 'already_applied', 'submission_unknown', 'failed'])
@@ -308,6 +392,16 @@ def main():
     receipt = commands.add_parser('extract-evidence')
     receipt.add_argument('application_id')
     receipt.add_argument('event_id', type=int)
+    reserve = commands.add_parser('reserve-attempt')
+    reserve.add_argument('application_id')
+    reserve.add_argument('revision', type=int)
+    reserve.add_argument('--destination', required=True)
+    reserve.add_argument('--request-id', required=True)
+    resolve = commands.add_parser('resolve-attempt')
+    resolve.add_argument('attempt_id')
+    resolve.add_argument('--outcome', required=True, choices=['submitted', 'failed', 'submission_unknown'])
+    resolve.add_argument('--note-file', type=Path, required=True)
+    resolve.add_argument('--evidence-file', type=Path)
     args = parser.parse_args()
     store = None
     try:
@@ -318,6 +412,12 @@ def main():
             result = store.freeze(args.application_id, json.loads(read_bytes(args.manifest_json)), args.manifest_json.parent)
         elif args.command == 'observe':
             result = store.observe(args.application_id, args.outcome, read_bytes(args.note_file).decode('utf-8'), read_bytes(args.evidence_file) if args.evidence_file else None, args.revision)
+        elif args.command == 'pending-attempts':
+            result = {'attempts': [dict(row) for row in store.db.execute("SELECT id, application_id, revision, destination, state, created_at, updated_at FROM attempts WHERE state IN ('reserved', 'submission_unknown') ORDER BY created_at")], 'submission_enabled': False, 'execution_authorized': False}
+        elif args.command == 'reserve-attempt':
+            result = store.reserve_attempt(args.application_id, args.revision, args.destination, args.request_id)
+        elif args.command == 'resolve-attempt':
+            result = store.resolve_attempt(args.attempt_id, args.outcome, read_bytes(args.note_file).decode('utf-8'), read_bytes(args.evidence_file) if args.evidence_file else None)
         elif args.command == 'inspect':
             result = store.inspect(args.application_id)
         elif args.command == 'extract':
