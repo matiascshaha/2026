@@ -90,7 +90,7 @@ class AuditStore:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA foreign_keys = ON')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version not in (0, 1, 2, 3):
+        if version not in (0, 1, 2, 3, 4):
             raise AuditError('Unsupported audit database version')
         self.db.executescript('''
             BEGIN IMMEDIATE;
@@ -131,7 +131,20 @@ class AuditStore:
                 created_at TEXT NOT NULL, packet_revision INTEGER, completion_binding TEXT,
                 FOREIGN KEY(application_id, packet_revision) REFERENCES packets(application_id, revision)
             );
-            PRAGMA user_version = 3;
+            CREATE TABLE IF NOT EXISTS execution_legacy_locks (
+                attempt_id TEXT PRIMARY KEY REFERENCES attempts(id)
+            );
+            INSERT OR IGNORE INTO execution_legacy_locks
+                SELECT id FROM attempts
+                WHERE state IN ('reserved', 'submission_unknown')
+                  AND (SELECT user_version FROM pragma_user_version) < 4;
+            CREATE TABLE IF NOT EXISTS execution_dispatches (
+                attempt_id TEXT PRIMARY KEY REFERENCES attempts(id),
+                identity TEXT NOT NULL UNIQUE,
+                binding TEXT NOT NULL, review BLOB NOT NULL, review_sha256 TEXT NOT NULL,
+                claimed_at TEXT NOT NULL
+            );
+            PRAGMA user_version = 4;
             COMMIT;
         ''')
 
@@ -390,7 +403,14 @@ class AuditStore:
             valid = digest(row['evidence']) == row['evidence_sha256'] if row['evidence'] is not None else row['evidence_sha256'] is None
             integrity = integrity and valid
             events.append({'id': row['id'], 'occurred_at': row['occurred_at'], 'kind': row['kind'], 'details': json.loads(row['details']), 'evidence_sha256': row['evidence_sha256'], 'integrity_ok': valid})
-        return {'application': app, 'packets': packets, 'events': events,
+        dispatches = []
+        for row in self.db.execute('SELECT d.* FROM execution_dispatches d JOIN attempts a ON a.id = d.attempt_id WHERE a.application_id = ?', (app_id,)):
+            valid = digest(row['review']) == row['review_sha256']
+            integrity = integrity and valid
+            dispatches.append({'attempt_id': row['attempt_id'], 'binding': row['binding'],
+                               'claimed_at': row['claimed_at'], 'review_sha256': row['review_sha256'],
+                               'integrity_ok': valid, 'review': json.loads(row['review'])})
+        return {'application': app, 'packets': packets, 'events': events, 'dispatches': dispatches,
                 'attempts': [dict(row) for row in self.db.execute('SELECT id, request_id, revision, destination, state, created_at, updated_at FROM attempts WHERE application_id = ? ORDER BY created_at', (app_id,))],
                 'integrity_ok': integrity,
                 'submission_enabled': False, 'warning': 'Prepared is not submitted or authorized. External outcomes are operator-reported. No receipt does not prove no application.'}

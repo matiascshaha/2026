@@ -383,7 +383,7 @@ class AuditTests(unittest.TestCase):
             self.store.db.execute('PRAGMA user_version = 1')
         self.store.close()
         self.store = audit.AuditStore(self.root / 'private')
-        self.assertEqual(self.store.db.execute('PRAGMA user_version').fetchone()[0], 3)
+        self.assertEqual(self.store.db.execute('PRAGMA user_version').fetchone()[0], 4)
         self.assertEqual(self.store.artifact(self.app, 1, 'files/resume_md'), original)
         self.reserve()
 
