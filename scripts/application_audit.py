@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Offline assisted application audit. No network, upload, or submission capability."""
+from contextlib import contextmanager
 import argparse
 import hashlib
 import json
@@ -89,7 +90,7 @@ class AuditStore:
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA foreign_keys = ON')
         version = self.db.execute('PRAGMA user_version').fetchone()[0]
-        if version not in (0, 1, 2):
+        if version not in (0, 1, 2, 3):
             raise AuditError('Unsupported audit database version')
         self.db.executescript('''
             BEGIN IMMEDIATE;
@@ -124,9 +125,33 @@ class AuditStore:
             );
             CREATE UNIQUE INDEX IF NOT EXISTS one_unresolved_or_submitted_attempt
                 ON attempts(identity) WHERE state IN ('reserved', 'submission_unknown', 'submitted');
-            PRAGMA user_version = 2;
+            CREATE TABLE IF NOT EXISTS workflow_intakes (
+                request_id TEXT PRIMARY KEY, application_id TEXT NOT NULL REFERENCES applications(id),
+                binding TEXT NOT NULL, snapshot BLOB NOT NULL, sha256 TEXT NOT NULL,
+                created_at TEXT NOT NULL, packet_revision INTEGER, completion_binding TEXT,
+                FOREIGN KEY(application_id, packet_revision) REFERENCES packets(application_id, revision)
+            );
+            PRAGMA user_version = 3;
             COMMIT;
         ''')
+
+    @contextmanager
+    def transaction(self):
+        """Compose ledger operations without committing an enclosing coordinator transaction."""
+        if self.db.in_transaction:
+            savepoint = 'nested_' + uuid.uuid4().hex
+            self.db.execute('SAVEPOINT ' + savepoint)
+            try:
+                yield
+            except BaseException:
+                self.db.execute('ROLLBACK TO ' + savepoint)
+                raise
+            finally:
+                self.db.execute('RELEASE ' + savepoint)
+        else:
+            with self.db:
+                self.db.execute('BEGIN IMMEDIATE')
+                yield
 
     def close(self):
         self.db.close()
@@ -160,8 +185,7 @@ class AuditStore:
         clean['provider'] = require_text(provider, 'provider') if provider_id is not None else None
         identity = digest(json.dumps([clean['employer'].casefold(), clean['provider'].casefold(), clean['provider_job_id']]).encode()) if provider_id is not None else None
         app_id = str(uuid.uuid4())
-        with self.db:
-            self.db.execute('BEGIN IMMEDIATE')
+        with self.transaction():
             if identity:
                 existing = self.db.execute('SELECT id FROM applications WHERE identity = ?', (identity,)).fetchone()
                 if existing:
@@ -197,6 +221,23 @@ class AuditStore:
                 if name in {'resume_pdf', 'cover_letter_pdf'} and prefix == 'files' and not data.startswith(b'%PDF-'):
                     raise AuditError('PDF artifacts must have a PDF header')
                 blobs[f'{prefix}/{name}'] = data
+        return self.freeze_bytes(app_id, manifest, blobs)
+
+    def freeze_bytes(self, app_id, manifest, blobs):
+        """Freeze already captured bytes using the same checks as path-based freezing."""
+        if not isinstance(manifest, dict):
+            raise AuditError('Packet manifest must be a JSON object')
+        if not isinstance(blobs, dict) or not {f'files/{name}' for name in REQUIRED}.issubset(blobs):
+            raise AuditError('Missing required packet artifacts')
+        if any(not isinstance(name, str) or not (name.startswith('context/') or name in {f'files/{key}' for key in REQUIRED | OPTIONAL}) for name in blobs):
+            raise AuditError('Invalid artifact name')
+        if not any(name.startswith('context/') for name in blobs):
+            raise AuditError('Missing context sources')
+        for name, data in blobs.items():
+            if not isinstance(data, bytes) or not data or len(data) > MAX_FILE_BYTES:
+                raise AuditError('Artifact must be nonempty bytes no larger than 20 MiB')
+            if name in {'files/resume_pdf', 'files/cover_letter_pdf'} and not data.startswith(b'%PDF-'):
+                raise AuditError('PDF artifacts must have a PDF header')
         choices = require_text(manifest.get('tailoring_notes'), 'tailoring_notes')
         revision_ref = require_text(manifest.get('context_revision'), 'context_revision')
         blockers = manifest.get('blockers', [])
@@ -220,8 +261,7 @@ class AuditStore:
             checked.append({'claim': claim, 'source_id': source, 'source_sha256': digest(data), 'start_line': start, 'end_line': end})
         metadata = {'context_revision': revision_ref, 'tailoring_notes': choices, 'blockers': blockers, 'claims': checked,
                     'inventory': {name: digest(data) for name, data in blobs.items()}}
-        with self.db:
-            self.db.execute('BEGIN IMMEDIATE')
+        with self.transaction():
             app = self._application(app_id)
             if app['status'] in TERMINAL:
                 raise AuditError('Confirmed or uncertain application history blocks new packet revisions; reconcile before further work')
@@ -241,8 +281,7 @@ class AuditStore:
             raise AuditError('Evidence must be nonempty bytes no larger than 20 MiB')
         if outcome in {'submitted', 'already_applied'} and evidence is None:
             raise AuditError('Confirmed external outcomes require saved receipt or site evidence')
-        with self.db:
-            self.db.execute('BEGIN IMMEDIATE')
+        with self.transaction():
             app = self._application(app_id)
             if self.db.execute("SELECT 1 FROM attempts WHERE application_id = ? AND state IN ('reserved', 'submission_unknown')", (app_id,)).fetchone():
                 raise AuditError('Resolve the reserved attempt instead of using legacy outcome observation')
@@ -269,8 +308,7 @@ class AuditStore:
         request_id = require_text(request_id, 'request_id')
         if type(revision) is not int or revision < 1:
             raise AuditError('revision must be a positive integer')
-        with self.db:
-            self.db.execute('BEGIN IMMEDIATE')
+        with self.transaction():
             prior = self.db.execute('SELECT * FROM attempts WHERE request_id = ?', (request_id,)).fetchone()
             if prior:
                 if (prior['application_id'], prior['revision'], prior['destination']) != (app_id, revision, destination):
@@ -279,6 +317,11 @@ class AuditStore:
             app = self._application(app_id)
             if app['identity'] is None:
                 raise AuditError('Attempt reservation requires confirmed provider job identity; URL-only matches need review')
+            intake = self.db.execute('SELECT packet_revision, snapshot, sha256 FROM workflow_intakes WHERE application_id = ? ORDER BY rowid DESC LIMIT 1', (app_id,)).fetchone()
+            if intake is not None and digest(intake['snapshot']) != intake['sha256']:
+                raise AuditError('Workflow intake integrity check failed')
+            if intake is not None and intake['packet_revision'] != revision:
+                raise AuditError('Reservation must bind the completed latest workflow intake packet')
             if app['status'] not in {'prepared', 'failed'}:
                 raise AuditError('Application has unresolved history or is not prepared')
             view = self.inspect(app_id)
@@ -307,8 +350,7 @@ class AuditStore:
             raise AuditError('Evidence must be nonempty bytes no larger than 20 MiB')
         if outcome in {'submitted', 'failed'} and evidence is None:
             raise AuditError('Terminal attempt outcomes require confirmation or no-submission reconciliation evidence')
-        with self.db:
-            self.db.execute('BEGIN IMMEDIATE')
+        with self.transaction():
             row = self.db.execute('SELECT * FROM attempts WHERE id = ?', (attempt_id,)).fetchone()
             if row is None:
                 raise AuditError('Unknown attempt ID')
@@ -369,6 +411,8 @@ class AuditStore:
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--store', type=Path, default=ROOT / '.private/career-system',
+                        help='Private ledger directory; defaults to ignored checkout storage')
     commands = parser.add_subparsers(dest='command', required=True)
     imp = commands.add_parser('import-lead')
     imp.add_argument('lead_json', type=Path)
@@ -405,7 +449,7 @@ def main():
     args = parser.parse_args()
     store = None
     try:
-        store = AuditStore(ROOT / '.private' / 'career-system')
+        store = AuditStore(args.store)
         if args.command == 'import-lead':
             result = store.import_lead(json.loads(read_bytes(args.lead_json)))
         elif args.command == 'freeze':
