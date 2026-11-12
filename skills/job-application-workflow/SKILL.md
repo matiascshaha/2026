@@ -17,6 +17,8 @@ Keep new private context exports under ignored `.private/`; the repo is public.
 Follow `CONTRIBUTING.md` for tooling or owner-confirmed context changes, tests, and
 any authorized draft PR. Neither retrieval nor generation permits submission.
 
+You authorize uploading your prepared résumé to an official employer or application site for jobs you’ve approved in this workflow, without asking again just for the upload. This doesn’t authorize public sharing, invented answers or bypassing site requirements. Scheduled searches remain preparation-only until you change that.
+
 ## Core Workflow
 
 1. Read `AGENTS.md` first.
